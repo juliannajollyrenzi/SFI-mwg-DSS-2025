@@ -134,7 +134,8 @@ mcr_alltime %>%
   summarize(mean_CV = mean(CV),
             se = sd(CV)/sqrt(n())) %>% 
   # re-level so they match
-  mutate(Component = factor(Component, levels = c("CVe", "CVtilde", "CVa", "CVc"))) %>% 
+  mutate(Component = factor(Component, levels = c("CVe", "CVtilde", "CVa", "CVc")),
+         Habitat = factor(Habitat, levels = c("forereef", "backreef", "fringing"))) %>% 
   ggplot(aes(x = Component, y = (mean_CV), group = Habitat, color = Habitat)) +
   geom_point(size = 3) +
   scale_x_discrete(labels = c("CVa" = expression("CV"[a]), 
@@ -142,14 +143,9 @@ mcr_alltime %>%
                                                  "CVe" = expression("CV"[e]), 
                                                  "CVtilde" = expression(tilde("CV")))) +
   geom_errorbar(aes(ymin = (mean_CV - se), ymax = (mean_CV + se)), width = 0.2) +
-  geom_line()
+  geom_line() +
+  scale_colour_viridis_d()
 ```
-
-
-
-
-
-
 
 
 # Rolling window: Backreef LTER 1
@@ -194,7 +190,7 @@ Recall:
 - CVa = CVcom with asynchrony only
 - CVe = CV of an average species
 - CVtilde = expected CVcom under assumption of perfect synchrony but realized dominance structure
-- IS CVc the expected community CV?
+- CVc is the temporal CV
 
 ## Look at all of the power law relationships for any window size
 
