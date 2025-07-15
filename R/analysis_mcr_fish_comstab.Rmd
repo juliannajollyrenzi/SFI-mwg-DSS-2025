@@ -61,8 +61,7 @@ CalcZeroInfGeomDens = function(x){
 # ggplot theme
 theme_set(
   theme_bw(base_size = 20) +
-    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-    theme(plot.title = element_text(vjust = -6))
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) 
 ) 
 ```
 
@@ -144,11 +143,16 @@ get_mcr_diversity <- function(df_wide) {
 ```{r}
 plot_mcr_diversity <- function(df_diversity, title_text){
   # df_diversity should be the output from get_mcr_diversity()
+  # first re-level for plotting purposes
+  df_diversity %>% 
+    mutate(habitat = factor(habitat, levels = c("forereef", "backreef", "fringing"))) -> df_diversity
+  
   # first for richness
   df_diversity %>% 
     ggplot(aes(x = year, y = richness, color = habitat)) +
     geom_line() +
     facet_wrap(.~site) +
+    scale_colour_viridis_d() +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 45, hjust = 1)) -> plt.a
   
@@ -157,6 +161,7 @@ plot_mcr_diversity <- function(df_diversity, title_text){
     ggplot(aes(x = year, y = evenness, color = habitat)) +
     geom_line() +
     facet_wrap(.~site) +
+    scale_colour_viridis_d() +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 45, hjust = 1))  -> plt.b
   
@@ -165,6 +170,7 @@ plot_mcr_diversity <- function(df_diversity, title_text){
     ggplot(aes(x = year, y = shannon, color = habitat)) +
     geom_line() +
     facet_wrap(.~site) +
+    scale_colour_viridis_d() +
     theme(legend.position = "none",
           axis.text.x = element_text(angle = 45, hjust = 1)) -> plt.c
   
@@ -173,6 +179,7 @@ plot_mcr_diversity <- function(df_diversity, title_text){
     ggplot(aes(x = year, y = total_biomass, color = habitat)) +
     geom_line() +
     facet_wrap(.~site) +
+    scale_colour_viridis_d() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) -> plt.d
   
   (plt.a + plt.b) / (plt.c + plt.d) + plot_annotation(
@@ -238,7 +245,7 @@ plot_mcr_diversity(get_mcr_diversity(
 ## Make PDF of all the plots
 
 ```{r}
-# pdf(here("figures", "mcr_fish_diversity_time.pdf"), width = 17, height = 10)
+pdf(here("figures", "mcr_fish_diversity_time.pdf"), width = 17, height = 10)
 
 print(plt.all.div)
 print(plt.primcon.div)
@@ -246,9 +253,8 @@ print(plt.seccon.div)
 print(plt.plankt.div)
 print(plt.pisc.div)
 
-# dev.off()
+dev.off()
 ```
-
 
 # All time MCR CVs
 
@@ -334,7 +340,7 @@ plot_mcr_CVs <- function(cv_df, title_text) {
 }
 ```
 
-## Make CV plots for different subsets of taxa
+## Make CV plots for coarse trophic groupings
 
 First for all species
 
@@ -396,310 +402,223 @@ plot_mcr_CVs(
 ) -> plt.plankt.cv
 ```
 
-## Output into a PDF
+## Make CV plots for estimated trohpic bin groupings
+
+```{r}
+plot_mcr_CVs(
+  partition_many_mcr(df = subset_mcr_group(df_long = mcr_fish, 
+                                           meta_df = mcr_meta, 
+                                           filter_column = "TrophicBinEst", 
+                                           condition = "2-2.49"), 
+                     conditions = unique(mcr_wide$plot)),
+  title_text = "TL: 2-2.49"
+) -> plt.2.249.cv
+```
+
+```{r}
+plot_mcr_CVs(
+  partition_many_mcr(df = subset_mcr_group(df_long = mcr_fish, 
+                                           meta_df = mcr_meta, 
+                                           filter_column = "TrophicBinEst", 
+                                           condition = "2.5-2.99"), 
+                     conditions = unique(mcr_wide$plot)),
+  title_text = "TL: 2.5-2.99"
+) -> plt.25.299.cv
+```
+
+3-3.49
+
+```{r}
+plot_mcr_CVs(
+  partition_many_mcr(df = subset_mcr_group(df_long = mcr_fish, 
+                                           meta_df = mcr_meta, 
+                                           filter_column = "TrophicBinEst", 
+                                           condition = "3-3.49"), 
+                     conditions = unique(mcr_wide$plot)),
+  title_text = "TL: 3-3.49"
+) -> plt.3.349.cv
+```
+
+3.5-3.99
+
+```{r}
+plot_mcr_CVs(
+  partition_many_mcr(df = subset_mcr_group(df_long = mcr_fish, 
+                                           meta_df = mcr_meta, 
+                                           filter_column = "TrophicBinEst", 
+                                           condition = "3.5-3.99"), 
+                     conditions = unique(mcr_wide$plot)),
+  title_text = "TL: 3.5-3.99"
+) -> plt.35.399.cv
+```
+
+4-4.49
+
+```{r}
+plot_mcr_CVs(
+  partition_many_mcr(df = subset_mcr_group(df_long = mcr_fish, 
+                                           meta_df = mcr_meta, 
+                                           filter_column = "TrophicBinEst", 
+                                           condition = "4-4.49"), 
+                     conditions = unique(mcr_wide$plot)),
+  title_text = "TL: 4-4.49"
+) -> plt.4.449.cv
+```
+
+4.5-5.99: **TOO FEW SPECIES**
+
+```{r}
+plot_mcr_CVs(
+  partition_many_mcr(df = subset_mcr_group(df_long = mcr_fish, 
+                                           meta_df = mcr_meta, 
+                                           filter_column = "TrophicBinEst", 
+                                           condition = "4.5-5.99"), 
+                     conditions = unique(mcr_wide$plot)),
+  title_text = "TL: 4.5-5.99"
+) #-> plt.45.599.cv
+```
+
+## Output all CV figures into a PDF
 
 ```{r}
 pdf(here("figures", "CV_plots_alltime.pdf"), height = 12, width = 14)
 
-(plt.all.cv + plot_spacer( )) / 
+print((plt.all.cv + plot_spacer( )) / 
   (plt.primcon.cv + plt.seccon.cv) / 
-    (plt.pisc.cv + plt.plankt.cv) 
+    (plt.pisc.cv + plt.plankt.cv) )
 
- dev.off()
+
+print((plt.2.249.cv + plt.25.299.cv) / (plt.3.349.cv + plt.35.399.cv) / (plt.4.449.cv + plot_spacer()))
+
+dev.off()
 ```
 
+# Rolling window 
 
-
-# All time MCR stats: feeding groups
-
-
+Make a rolling window function
 
 ```{r}
-subset_mcr_group(df_long = mcr_fish, meta_df = mcr_meta, filter_column = "CoarseTrophicMCR", condition = "Piscivore_primarily") -> tst
+rollingwindow_many_mcr <- function(df_wide, plots, width) {
+  df_wide %>% 
+    filter(plot == plots[1]) %>% 
+    select(-dataset, -site, -habitat, -plot) %>% 
+    rename(Year = year) -> df_wide_2
+
+  # initialize the dataframe
+  # width is the rolling window width
+  megadf <- rollapply(data = df_wide_2, 
+                      width = width, 
+                      by = 1, FUN = partitionR_window, 
+                      by.column = FALSE, align = "left") %>% 
+    as.data.frame() %>% 
+    mutate(across(-warnings, as.numeric)) %>% 
+    mutate(Community = plots[1])
+  
+  
+  # iterate over each site
+   for(i in 2:length(plots)) {
+     # filter whole dataset
+     df_wide %>% 
+        filter(plot == plots[i]) %>% 
+        select(-dataset, -site, -habitat, -plot) %>% 
+        rename(Year = year) -> df_wide_3
+        
+        # apply rolling window    
+         tmp <- rollapply(data = df_wide_3, 
+                            width = width, 
+                            by = 1, FUN = partitionR_window, 
+                            by.column = FALSE, align = "left") %>% 
+              as.data.frame() %>% 
+              mutate(across(-warnings, as.numeric)) %>% 
+              mutate(Community = plots[i])
+         megadf <- rbind(megadf, tmp)
+   }
+  
+  # add metadata
+  megadf %>% 
+    as.data.frame() %>% 
+    rowwise() %>% 
+    mutate(Site = paste0("LTER_", str_split(Community, "_")[[1]][2])) %>% 
+    mutate(Habitat = str_split(Community, "_")[[1]][3])
+}
+    
 ```
 
-Piscivore_primarily, Planktivore, Primary Consumer, Secondary Consumer
-
-## Piscivore
+And a plotting function
 
 ```{r}
-mcr_fish %>% 
-  full_join(mcr_meta) %>% 
-  filter(CoarseTrophicMCR != "na") %>% 
-  filter(CoarseTrophicMCR == "Piscivore_primarily") %>% 
-  group_by(dataset, site, habitat, year, plot, taxon_name) %>% 
-  summarize(mean_biomass_g_per_5x50m2 = mean(biomass_g_per_5x50_m2)) %>% 
-  ungroup() %>% 
-  pivot_wider(names_from = taxon_name, values_from = mean_biomass_g_per_5x50m2,
-              values_fill = 0) %>% 
-  filter(!is.na(dataset)) -> mcr_piscivore
+plot_rollingwindow_mcr <- function(df_rolling) {
+  # df_rolling is the output from the rollingwindow_many_mcr function
+  df_rolling %>% 
+    select(start_year, Community, CVe, CVtilde, CVa, CVc) %>% 
+    pivot_longer(cols = c(CVe, CVtilde, CVa, CVc), names_to = "CV_type", values_to = "CV") %>% 
+    ggplot(aes(x = start_year, y = CV)) +
+    geom_line(aes(x = start_year, y = CV, group = CV_type, color = CV_type)) +
+    ylab("CV") +
+    xlab("First year of window") +
+    scale_colour_viridis_d(name = "CV", labels = c("CVa" = expression("CV"[a]), 
+                                                   "CVc" = expression("CV"[c]), 
+                                                   "CVe" = expression("CV"[e]), 
+                                                   "CVtilde" = expression(tilde("CV")))) +
+      facet_wrap(.~Community) 
+}
+
 ```
 
-NEED TO ADD ZEROS^^^
 
-Calculate the partitioning
+## 5-year window
+
+Make one for a 5 year window
 
 ```{r}
-mcr_piscivore_alltime <- partition_many_mcr(df = mcr_piscivore, 
-                                         conditions = unique(mcr_piscivore$plot))
+mcr_rolling_wind_5 <- rollingwindow_many_mcr(df_wide = mcr_wide, plots = unique(mcr_wide$plot), width = 5)
+
+plot_rollingwindow_mcr(mcr_rolling_wind_5) +
+  plot_annotation(
+    title = "5-year window",
+    theme = theme(
+      plot.title = element_text(face = "bold", vjust = 1.5),
+    )
+  ) -> plt.5yr
 ```
 
-Plot
+## 10-year window
 
 ```{r}
-mcr_piscivore_alltime %>% 
-  select(Community, Site, Habitat, CVe, CVtilde, CVa, CVc) %>% 
-  pivot_longer(cols = c("CVe", "CVtilde", "CVa", "CVc"), names_to = "Component", values_to = "CV") %>% 
-  mutate(CV = as.numeric(CV)) %>% 
-  group_by(Habitat, Component) %>% 
-  summarize(mean_CV = mean(CV),
-            se = sd(CV)/sqrt(n())) %>% 
-  # re-level so they match
-  mutate(Component = factor(Component, levels = c("CVe", "CVtilde", "CVa", "CVc")),
-         Habitat = factor(Habitat, levels = c("forereef", "backreef", "fringing"))) %>% 
-  ggplot(aes(x = Component, y = (mean_CV), group = Habitat, color = Habitat)) +
-  geom_point(size = 3) +
-  scale_x_discrete(labels = c("CVa" = expression("CV"[a]), 
-                                                 "CVc" = expression("CV"[c]), 
-                                                 "CVe" = expression("CV"[e]), 
-                                                 "CVtilde" = expression(tilde("CV")))) +
-  geom_errorbar(aes(ymin = (mean_CV - se), ymax = (mean_CV + se)), width = 0.2) +
-  geom_line() +
-  scale_colour_viridis_d() +
-  ggtitle("Piscivores")
+mcr_rolling_wind_10 <- rollingwindow_many_mcr(df_wide = mcr_wide, plots = unique(mcr_wide$plot), width = 10)
+
+plot_rollingwindow_mcr(mcr_rolling_wind_10) +
+  plot_annotation(
+    title = "10-year window",
+    theme = theme(
+      plot.title = element_text(face = "bold", vjust = 1.5),
+    )
+  ) -> plt.10yr
 ```
 
-## Planktivores
+## Print PDFs
 
 ```{r}
-mcr_fish %>% 
-  full_join(mcr_meta) %>% 
-  filter(CoarseTrophicMCR != "na") %>% 
-  filter(CoarseTrophicMCR == "Planktivore") %>% 
-  group_by(dataset, site, habitat, year, plot, taxon_name) %>% 
-  summarize(mean_biomass_g_per_5x50m2 = mean(biomass_g_per_5x50_m2)) %>% 
-  ungroup() %>% 
-  pivot_wider(names_from = taxon_name, values_from = mean_biomass_g_per_5x50m2,
-              values_fill = 0) %>% 
-  filter(!is.na(dataset)) -> mcr_planktivore
+pdf(here("figures", "mcr_fish_moving_windows.pdf"), height = 14, width = 16)
+
+print(plt.5yr)
+print(plt.10yr)
+
+dev.off()
 ```
 
-NEED TO ADD ZEROS^^^
 
-Calculate the partitioning
+## Zhao partition
 
 ```{r}
-mcr_planktivore_alltime <- partition_many_mcr(df = mcr_planktivore, 
-                                         conditions = unique(mcr_planktivore$plot))
+# do for LTER 1 forereef as an example
+part_zhao_back1 <- zhao_decomp_w(subset_mcr_group(df_long = mcr_fish, 
+                                                  meta_df = mcr_meta, 
+                                                  filter_column = "plot", 
+                                                  condition = "lter_1_forereef"))
 ```
 
-Plot
-
-```{r}
-mcr_planktivore_alltime %>% 
-  select(Community, Site, Habitat, CVe, CVtilde, CVa, CVc) %>% 
-  pivot_longer(cols = c("CVe", "CVtilde", "CVa", "CVc"), names_to = "Component", values_to = "CV") %>% 
-  mutate(CV = as.numeric(CV)) %>% 
-  group_by(Habitat, Component) %>% 
-  summarize(mean_CV = mean(CV),
-            se = sd(CV)/sqrt(n())) %>% 
-  # re-level so they match
-  mutate(Component = factor(Component, levels = c("CVe", "CVtilde", "CVa", "CVc")),
-         Habitat = factor(Habitat, levels = c("forereef", "backreef", "fringing"))) %>% 
-  ggplot(aes(x = Component, y = (mean_CV), group = Habitat, color = Habitat)) +
-  geom_point(size = 3) +
-  scale_x_discrete(labels = c("CVa" = expression("CV"[a]), 
-                                                 "CVc" = expression("CV"[c]), 
-                                                 "CVe" = expression("CV"[e]), 
-                                                 "CVtilde" = expression(tilde("CV")))) +
-  geom_errorbar(aes(ymin = (mean_CV - se), ymax = (mean_CV + se)), width = 0.2) +
-  geom_line() +
-  scale_colour_viridis_d() +
-  ggtitle("Planktivore")
-```
-
-## Primary Consumer
-
-```{r}
-mcr_fish %>% 
-  full_join(mcr_meta) %>% 
-  filter(CoarseTrophicMCR != "na") %>% 
-  filter(CoarseTrophicMCR == "Primary Consumer") %>% 
-  group_by(dataset, site, habitat, year, plot, taxon_name) %>% 
-  summarize(mean_biomass_g_per_5x50m2 = mean(biomass_g_per_5x50_m2)) %>% 
-  ungroup() %>% 
-  pivot_wider(names_from = taxon_name, values_from = mean_biomass_g_per_5x50m2,
-              values_fill = 0) %>% 
-  filter(!is.na(dataset)) -> mcr_primary_consumer
-```
-
-NEED TO ADD ZEROS^^^
-
-Calculate the partitioning
-
-```{r}
-mcr_primary_consumer_alltime <- partition_many_mcr(df = mcr_primary_consumer, 
-                                         conditions = unique(mcr_primary_consumer$plot))
-```
-
-Plot
-
-```{r}
-mcr_primary_consumer_alltime %>% 
-  select(Community, Site, Habitat, CVe, CVtilde, CVa, CVc) %>% 
-  pivot_longer(cols = c("CVe", "CVtilde", "CVa", "CVc"), names_to = "Component", values_to = "CV") %>% 
-  mutate(CV = as.numeric(CV)) %>% 
-  group_by(Habitat, Component) %>% 
-  summarize(mean_CV = mean(CV),
-            se = sd(CV)/sqrt(n())) %>% 
-  # re-level so they match
-  mutate(Component = factor(Component, levels = c("CVe", "CVtilde", "CVa", "CVc")),
-         Habitat = factor(Habitat, levels = c("forereef", "backreef", "fringing"))) %>% 
-  ggplot(aes(x = Component, y = (mean_CV), group = Habitat, color = Habitat)) +
-  geom_point(size = 3) +
-  scale_x_discrete(labels = c("CVa" = expression("CV"[a]), 
-                                                 "CVc" = expression("CV"[c]), 
-                                                 "CVe" = expression("CV"[e]), 
-                                                 "CVtilde" = expression(tilde("CV")))) +
-  geom_errorbar(aes(ymin = (mean_CV - se), ymax = (mean_CV + se)), width = 0.2) +
-  geom_line() +
-  scale_colour_viridis_d() +
-  ggtitle("Primary consumer")
-```
-
-
-## Secondary Consumer
-
-```{r}
-mcr_fish %>% 
-  full_join(mcr_meta) %>% 
-  filter(CoarseTrophicMCR != "na") %>% 
-  filter(CoarseTrophicMCR == "Secondary Consumer") %>% 
-  group_by(dataset, site, habitat, year, plot, taxon_name) %>% 
-  summarize(mean_biomass_g_per_5x50m2 = mean(biomass_g_per_5x50_m2)) %>% 
-  ungroup() %>% 
-  pivot_wider(names_from = taxon_name, values_from = mean_biomass_g_per_5x50m2,
-              values_fill = 0) %>% 
-  filter(!is.na(dataset)) -> mcr_secondary_consumer
-```
-
-NEED TO ADD ZEROS^^^
-
-Calculate the partitioning
-
-```{r}
-mcr_secondary_consumer_alltime <- partition_many_mcr(df = mcr_secondary_consumer, 
-                                         conditions = unique(mcr_secondary_consumer$plot))
-```
-
-Plot
-
-```{r}
-mcr_secondary_consumer_alltime %>% 
-  select(Community, Site, Habitat, CVe, CVtilde, CVa, CVc) %>% 
-  pivot_longer(cols = c("CVe", "CVtilde", "CVa", "CVc"), names_to = "Component", values_to = "CV") %>% 
-  mutate(CV = as.numeric(CV)) %>% 
-  group_by(Habitat, Component) %>% 
-  summarize(mean_CV = mean(CV),
-            se = sd(CV)/sqrt(n())) %>% 
-  # re-level so they match
-  mutate(Component = factor(Component, levels = c("CVe", "CVtilde", "CVa", "CVc")),
-         Habitat = factor(Habitat, levels = c("forereef", "backreef", "fringing"))) %>% 
-  ggplot(aes(x = Component, y = (mean_CV), group = Habitat, color = Habitat)) +
-  geom_point(size = 3) +
-  scale_x_discrete(labels = c("CVa" = expression("CV"[a]), 
-                                                 "CVc" = expression("CV"[c]), 
-                                                 "CVe" = expression("CV"[e]), 
-                                                 "CVtilde" = expression(tilde("CV")))) +
-  geom_errorbar(aes(ymin = (mean_CV - se), ymax = (mean_CV + se)), width = 0.2) +
-  geom_line() +
-  scale_colour_viridis_d() +
-  ggtitle("Secondary consumer")
-```
-
-# All time MCR stats: trophic bins
-
-```{r}
-mcr_fish %>% 
-  full_join(mcr_meta) %>% 
-  filter(is.na(TrophicBinEst)) %>% 
-  group_by(dataset, site, habitat, year, plot, TrophicBinEst) %>% 
-  summarize(mean_biomass_g_per_5x50m2 = mean(biomass_g_per_5x50_m2)) %>% 
-  ungroup() %>% 
-  pivot_wider(names_from = TrophicBinEst, values_from = mean_biomass_g_per_5x50m2,
-              values_fill = 0) %>% 
-  filter(!is.na(dataset)) -> mcr_troph_est
-```
-
-Calculate the partitioning
-
-```{r}
-mcr_troph_est_alltime <- partition_many_mcr(df = mcr_troph_est, conditions = unique(mcr_troph_est$plot))
-```
-
-## Plot
-
-```{r}
-mcr_troph_est_alltime %>% 
-  select(Community, Site, Habitat, CVe, CVtilde, CVa, CVc) %>% 
-  pivot_longer(cols = c("CVe", "CVtilde", "CVa", "CVc"), names_to = "Component", values_to = "CV") %>% 
-  mutate(CV = as.numeric(CV)) %>% 
-  group_by(Habitat, Component) %>% 
-  summarize(mean_CV = mean(CV),
-            se = sd(CV)/sqrt(n())) %>% 
-  # re-level so they match
-  mutate(Component = factor(Component, levels = c("CVe", "CVtilde", "CVa", "CVc")),
-         Habitat = factor(Habitat, levels = c("forereef", "backreef", "fringing"))) %>% 
-  ggplot(aes(x = Component, y = (mean_CV), group = Habitat, color = Habitat)) +
-  geom_point(size = 3) +
-  scale_x_discrete(labels = c("CVa" = expression("CV"[a]), 
-                                                 "CVc" = expression("CV"[c]), 
-                                                 "CVe" = expression("CV"[e]), 
-                                                 "CVtilde" = expression(tilde("CV")))) +
-  geom_errorbar(aes(ymin = (mean_CV - se), ymax = (mean_CV + se)), width = 0.2) +
-  geom_line() +
-  scale_colour_viridis_d()
-```
-
-
-# Rolling window: Backreef LTER 1
-
-```{r}
-mcr_wide %>% 
-  filter(plot == "lter_1_backreef") %>%
-  select(-dataset, -site, -habitat, -plot) %>% 
-  rename(Year = year) -> forereef_1
-```
-
-## Apply Partitions
-
-```{r}
-part_zhao_back1 <- zhao_decomp_w(forereef_1)
-```
-
-```{r}
-part_fore1 <- rollapply(data = forereef_1, width = 5, by = 1, FUN = partitionR_window, by.column = FALSE, align = "left") %>% 
-  as.data.frame() %>% 
-  mutate(across(-warnings, as.numeric))
-```
-
-## Plot CV through time
-
-```{r}
-part_fore1 %>% 
-  select(start_year, CVe, CVtilde, CVa, CVc) %>% 
-  pivot_longer(cols = c(CVe, CVtilde, CVa, CVc), names_to = "CV_type", values_to = "CV") %>% 
-  ggplot(aes(x = start_year, y = CV)) +
-  geom_line(aes(x = start_year, y = CV, group = CV_type, color = CV_type)) +
-  ylab("CV") +
-  xlab("First year of window") +
-  scale_colour_viridis_d(name = "CV", labels = c("CVa" = expression("CV"[a]), 
-                                                 "CVc" = expression("CV"[c]), 
-                                                 "CVe" = expression("CV"[e]), 
-                                                 "CVtilde" = expression(tilde("CV")))) 
-```
-
-Plot mechanisms
+# Plot mechanisms
 
 ```{r}
 part_fore1 %>% 
